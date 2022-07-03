@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PlaylistController;
+use App\Http\Controllers\AudioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,11 @@ use App\Http\Controllers\PlaylistController;
 */
 
 Route::get('/', function () {
-    return view('index');
+    if (Route::has('login')){
+        return view('home');
+    }
+    else{
+    return view('index');}
 });
 
 Route::middleware([
@@ -25,17 +30,32 @@ Route::middleware([
 ])->group(function () {
 
     Route::get('/dashboard', function () {
-        return view('mydash');
+        $playlist=App\Models\playlist::where('user_id',Auth::user()->id)->get();
+
+         return view('home')->with('playlists',$playlist);
     })->name('dashboard');
     Route::get('/player', function () {
         return view('player');
     })->name('player');
+    Route::get('dashboard/plist/create', function () {
+        return view('CreatePlaylist');
+    });
+    Route::get('dashboard/audio/upload', function () {
+        return view('Uploadsongs');
+    });
+    Route::get('dashboard/plist/addsongs', function () {
+        $songs=App\Models\song::all();
+        return view('Addsongs')->with('songs',$songs);
+    });
 
+    Route::post('/playlist/create',[PlaylistController::class, 'create']);
+    Route::post('controller/audio/upload',[AudioController::class, 'upload']);
+    Route::post('controller/audio/list',[AudioController::class, 'getlist']);
 
 
 
 });
-Route::get('/playlist/create',[PlaylistController::class, 'create']);
+
 
 Auth::routes();
 
